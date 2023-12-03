@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './App.module.css';
 import useTextToEmoji from './useTextToEmoji';
 import { SiOpenai } from "react-icons/si";
@@ -18,8 +18,14 @@ function App() {
   const [isEditing, setIsEditing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  useEffect(() => {
+    if (!apiKey) {
+      setErrorMessage("API key is required to fetch emojis.");
+    } else {
+      setErrorMessage("");
+    }
+  }, [apiKey]);
   const [emoji, isLoading] = useTextToEmoji(input, singleEmoji, apiKey);
-
 
   return (
     <>
@@ -72,8 +78,8 @@ function App() {
               </p>
             </div>
           )}
-        {emoji && <p className={styles["emoji-display"]}>Emoji{singleEmoji ? "" : "s"}: {emoji}</p>}
-        {isLoading && 
+        {emoji && apiKey && <p className={styles["emoji-display"]}>Emoji{singleEmoji ? "" : "s"}: {emoji}</p>}
+        {isLoading && apiKey && 
         <div className={styles.emojiTranslationLoader}>
           <span>📝</span><span>🔀</span><span>😃</span>
         </div>

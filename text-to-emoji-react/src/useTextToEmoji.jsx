@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
 function debounce(func, delay) {
@@ -12,41 +12,48 @@ function debounce(func, delay) {
 }
 
 const useTextToEmoji = (textPrompt, singleEmoji = false, apiKey) => {
-  const [emoji, setEmoji] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+    const [emoji, setEmoji] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-  const debouncedFetchRef = useRef(debounce(async (prompt) => {
-    setIsLoading(true);
-    try {
-      const content = singleEmoji
-        ? `Please convert the following sequence of words into a single emoji. Just one that summarizes all the words. Assume you have a max length of 1. No words allowed: "${prompt}"`
-        : `Please convert the following text into the most appropriate emojis. No words allowed: "${prompt}"`;
-      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-        model: "gpt-4",
-        messages: [{ "role": "user", "content": content }],
-        temperature: 0.1
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        }
-      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const fetchEmoji = useCallback(debounce(async (prompt) => {
 
-      setEmoji(response.data.choices[0].message.content.trim());
-    } catch (error) {
-      console.error('Error fetching emoji:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, 700));
+      if (!apiKey || apiKey.length < 30) {
+        return;
+      }
 
-  useEffect(() => {
-    if (textPrompt) {
-      debouncedFetchRef.current(textPrompt);
-    }
-  }, [textPrompt, singleEmoji, apiKey]);
-
-  return [emoji, isLoading];
-};
+      setIsLoading(true);
+      try {
+        const content = singleEmoji
+          ? `Please convert the following sequence of words into a single emoji. Just one that summarizes all the words. Assume you have a max length of 1. No words allowed: "${prompt}"`
+          : `Please convert the following text into the most appropriate emojis. No words allowed: "${prompt}"`;
+        const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+          model: "gpt-4",
+          messages: [{ "role": "user", "content": content }],
+          temperature: 0.1
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          }
+        });
+  
+        setEmoji(response.data.choices[0].message.content.trim());
+      } catch (error) {
+        console.error('Error fetching emoji:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 700), [singleEmoji, apiKey]);
+  
+    useEffect(() => {
+      if (textPrompt) {
+        fetchEmoji(textPrompt);
+      }
+    }, [textPrompt, singleEmoji, fetchEmoji]);
+  
+    return [emoji, isLoading];
+  };
+  
 
 export default useTextToEmoji;
