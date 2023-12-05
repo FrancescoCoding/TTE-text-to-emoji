@@ -1,4 +1,5 @@
-# Text-to-Emoji React Hook (powered by ChatGPT api by OpenAI) 🦞
+# Text-to-Emoji React Hook (powered by ChatGPT api)
+<img src="https://github.com/FrancescoCoding/TTE-text-to-emoji/assets/64712227/13e5cbcb-a5f0-40f6-b002-a0e7990d132d" alt="TTE-Demo" width="800"/>
 
 ## Description
 ### 📝🔀😃
